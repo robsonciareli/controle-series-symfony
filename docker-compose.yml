@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  php:
+    container_name: controle-series-symfony
+    build: ./php
+    ports:
+      - 83:80
+    volumes:
+      - ./:/app
+    networks:
+      - my-network
+    working_dir: /app
+    command: php -S 0.0.0.0:80 -t public
+
+  mysql:
+    container_name: mysql-symfony
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db_symfony'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: '123'
+      MYSQL_ROOT_PASSWORD: '123'
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    networks:
+      - my-network
+
+    
+networks:
+  my-network:
+    driver: bridge
