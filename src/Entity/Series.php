@@ -16,14 +16,20 @@ class Series
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToMany(mappedBy: 'series', targetEntity: Season::class, orphanRemoval: true)]
+    #[ORM\OneToMany(
+        mappedBy: 'series',
+        targetEntity: Season::class, 
+        orphanRemoval: true, 
+        cascade:['persist']
+    )]
     private Collection $seasons;
 
     
 
-    public function __construct(#[ORM\Column(unique:true)]
-    #[Assets\NotBlank]
-    #[Assets\Length(min:5)]
+    public function __construct(
+        #[ORM\Column(unique:true)]
+        #[Assets\NotBlank]
+        #[Assets\Length(min:5)]
     private ?string $name = null)
     {
         $this->seasons = new ArrayCollection();
