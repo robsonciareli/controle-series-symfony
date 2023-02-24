@@ -21,7 +21,7 @@
                 <a href="{{ path('app_series') }}">Home</a>
                 <a href="{{ path('app_logout') }}">Sair</a>
             </div>
-            {% else %}
+            {% elseif app.request.pathinfo != path('app_login') %}
             <a href="{{ path('app_login') }}">Entrar</a>
             {% endif %}
             <h1>{{ block('title') }}</h1>
