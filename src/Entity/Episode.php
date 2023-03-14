@@ -51,6 +51,7 @@ class Episode
 
     public function setSeason(?Season $season): self
     {
+        $this->setWatched(false);
         $this->season = $season;
 
         return $this;
