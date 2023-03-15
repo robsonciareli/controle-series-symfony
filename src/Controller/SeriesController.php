@@ -2,11 +2,12 @@
 
 namespace App\Controller;
 
-use App\DTO\SeriesCreateFormInput;
-use App\Entity\Episode;
 use App\Entity\Season;
 use App\Entity\Series;
+use App\Entity\Episode;
 use App\Form\SeriesType;
+use Symfony\Component\Mime\Email;
+use App\DTO\SeriesCreateFormInput;
 use App\Repository\SeriesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,10 +15,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Mailer\MailerInterface;
 
 class SeriesController extends AbstractController
 {
-    public function __construct(private SeriesRepository $seriesRepository, private EntityManagerInterface $entityManagerInterface)
+    public function __construct(
+        private SeriesRepository $seriesRepository, 
+        private EntityManagerInterface $entityManagerInterface,
+        private MailerInterface $mailer
+        )
     {
     }
 
@@ -64,6 +70,17 @@ class SeriesController extends AbstractController
         );
 
         $this->seriesRepository->save($series, true);
+
+        $user = $this->getUser();
+        $email = (new Email())
+            ->from('sample@example.com')
+            ->to($user->getUserIdentifier())
+            ->subject('Nova série criada')
+            ->text("Série {$series->getName()} foi criada")
+            ->html("<h1>Nova série</h1><p>Série \"{$series->getName()}\" foi criada</p>");
+
+        $this->mailer->send($email);
+
         return new RedirectResponse('/series/');
     }
 
