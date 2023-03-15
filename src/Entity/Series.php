@@ -19,8 +19,7 @@ class Series
     #[ORM\OneToMany(
         mappedBy: 'series',
         targetEntity: Season::class, 
-        orphanRemoval: true, 
-        cascade:['persist']
+        orphanRemoval: true
     )]
     private Collection $seasons;
 

@@ -2,9 +2,12 @@
 
 namespace App\Repository;
 
+use Exception;
 use App\Entity\Series;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\DTO\SeriesCreateFormInput;
+use App\Repository\SeasonRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Series>
@@ -16,7 +19,10 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class SeriesRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(
+        ManagerRegistry $registry, 
+        private SeasonRepository $seasonRepository,
+        private EpisodeRepository $episodeRepository)
     {
         parent::__construct($registry, Series::class);
     }
@@ -45,28 +51,22 @@ class SeriesRepository extends ServiceEntityRepository
         $this->remove($series, true);
     }
 
-//    /**
-//     * @return Series[] Returns an array of Series objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function add(SeriesCreateFormInput $input): Series
+    {
+        $entityManager = $this->getEntityManager();
 
-//    public function findOneBySomeField($value): ?Series
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        $series = new Series($input->seriesName);
+        $entityManager->persist($series);
+        $entityManager->flush();
+
+        try {
+            $this->seasonRepository->addSeasonsQuantity($input->seasonsQuantity, $series->getId());
+            $seasons = $this->seasonRepository->findBy(['series' => $series]);
+            $this->episodeRepository->addEpisodesPerSeason($input->episodesPerSeason, $seasons);
+        } catch (Exception $e) {
+            $this->remove($series, true);
+        }
+
+        return $series;
+    }
 }

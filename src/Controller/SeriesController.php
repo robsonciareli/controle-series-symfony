@@ -55,21 +55,7 @@ class SeriesController extends AbstractController
             return $this->renderForm('series/form.html.twig', compact('seriesForm'));
         }
 
-        $series = new Series($input->seriesName);
-        for( $i=1; $i <= $input->seasonsQuantity; $i++ ){
-            $season = new Season($i);
-            for( $j=1; $j <= $input->episodesPerSeason; $j++ ){
-                $season->addEpisodes(new Episode($j));
-            }
-            $series->addSeason($season);
-        }
-
-        $this->addFlash(
-            'success', 
-            "Série \"{$series->getName()}\" inserida com sucesso"
-        );
-
-        $this->seriesRepository->save($series, true);
+        $series = $this->seriesRepository->add($input);
 
         $user = $this->getUser();
         $email = (new Email())
@@ -80,6 +66,11 @@ class SeriesController extends AbstractController
             ->html("<h1>Nova série</h1><p>Série \"{$series->getName()}\" foi criada</p>");
 
         $this->mailer->send($email);
+
+        $this->addFlash(
+            'success', 
+            "Série \"{$series->getName()}\" inserida com sucesso"
+        );
 
         return new RedirectResponse('/series/');
     }

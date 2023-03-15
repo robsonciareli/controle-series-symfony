@@ -21,8 +21,7 @@ class Season
     #[ORM\OneToMany(
         mappedBy: 'season', 
         targetEntity: Episode::class, 
-        orphanRemoval: true,
-        cascade:['persist']
+        orphanRemoval: true
     )]
     private Collection $episodes;
 
