@@ -10,6 +10,7 @@ use Symfony\Component\Mime\Email;
 use App\DTO\SeriesCreateFormInput;
 use App\Repository\SeriesRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -58,12 +59,13 @@ class SeriesController extends AbstractController
         $series = $this->seriesRepository->add($input);
 
         $user = $this->getUser();
-        $email = (new Email())
+        $email = (new TemplatedEmail())
             ->from('sample@example.com')
             ->to($user->getUserIdentifier())
             ->subject('Nova série criada')
             ->text("Série {$series->getName()} foi criada")
-            ->html("<h1>Nova série</h1><p>Série \"{$series->getName()}\" foi criada</p>");
+            ->htmlTemplate("emails/series-created.html.twig")
+            ->context(compact('series'));
 
         $this->mailer->send($email);
 
