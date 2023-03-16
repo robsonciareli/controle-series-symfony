@@ -2,11 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Season;
 use App\Entity\Series;
-use App\Entity\Episode;
 use App\Form\SeriesType;
-use Symfony\Component\Mime\Email;
 use App\DTO\SeriesCreateFormInput;
 use App\Repository\SeriesRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -60,7 +57,6 @@ class SeriesController extends AbstractController
 
         $user = $this->getUser();
         $email = (new TemplatedEmail())
-            ->from('sample@example.com')
             ->to($user->getUserIdentifier())
             ->subject('Nova série criada')
             ->text("Série {$series->getName()} foi criada")
