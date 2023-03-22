@@ -5,22 +5,22 @@ namespace App\Controller;
 use App\Entity\Series;
 use App\Form\SeriesType;
 use App\DTO\SeriesCreateFormInput;
+use App\Message\SerieWasCreated;
 use App\Repository\SeriesRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class SeriesController extends AbstractController
 {
     public function __construct(
         private SeriesRepository $seriesRepository, 
         private EntityManagerInterface $entityManagerInterface,
-        private MailerInterface $mailer
+        private MessageBusInterface $message
         )
     {
     }
@@ -55,16 +55,8 @@ class SeriesController extends AbstractController
 
         $series = $this->seriesRepository->add($input);
 
-        $user = $this->getUser();
-        $email = (new TemplatedEmail())
-            ->to($user->getUserIdentifier())
-            ->subject('Nova série criada')
-            ->text("Série {$series->getName()} foi criada")
-            ->htmlTemplate("emails/series-created.html.twig")
-            ->context(compact('series'));
-
-        $this->mailer->send($email);
-
+        $this->message->dispatch( new SerieWasCreated($series));
+        
         $this->addFlash(
             'success', 
             "Série \"{$series->getName()}\" inserida com sucesso"
